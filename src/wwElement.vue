@@ -2,7 +2,7 @@
     <div class="data-status" v-click-outside="() => open = false">
         <button class="status-trigger" @click="open = !open">
             <div class="dot-row">
-                <span v-for="source in sources" :key="source.key" class="status-dot" :class="source.hasData ? 'dot-green' : 'dot-yellow'"></span>
+                <span v-for="source in sources" :key="source.key" class="status-dot" :class="source.hasData ? 'dot-green' : 'dot-gray'"></span>
             </div>
             <span class="trigger-label">Data Status</span>
             <svg class="chevron" :class="{ 'is-open': open }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -12,7 +12,7 @@
         <div v-if="open" class="dropdown">
             <div class="status-list">
                 <div v-for="source in sources" :key="source.key" class="status-row">
-                    <span class="status-dot" :class="source.hasData ? 'dot-green' : 'dot-yellow'"></span>
+                    <span class="status-dot" :class="source.hasData ? 'dot-green' : 'dot-gray'"></span>
                     <span class="status-label">{{ source.label }}</span>
                     <span class="status-count">{{ source.count }}</span>
                 </div>
@@ -183,9 +183,9 @@ export default {
     box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
 }
 
-.dot-yellow {
-    background: #eab308;
-    box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.2);
+.dot-gray {
+    background: #9ca3af;
+    box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.2);
 }
 
 .status-label {
