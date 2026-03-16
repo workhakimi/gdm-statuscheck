@@ -1,25 +1,36 @@
 <template>
-    <div class="data-status">
-        <div class="status-list">
-            <div v-for="source in sources" :key="source.key" class="status-row">
-                <span class="status-dot" :class="source.hasData ? 'dot-green' : 'dot-yellow'"></span>
-                <span class="status-label">{{ source.label }}</span>
-                <span class="status-count">{{ source.count }}</span>
+    <div class="data-status" v-click-outside="() => open = false">
+        <button class="status-trigger" @click="open = !open">
+            <div class="dot-row">
+                <span v-for="source in sources" :key="source.key" class="status-dot" :class="source.hasData ? 'dot-green' : 'dot-yellow'"></span>
             </div>
-        </div>
-        <button class="btn-refresh" @click="onRefresh">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 4 23 10 17 10" />
-                <polyline points="1 20 1 14 7 14" />
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            <span class="trigger-label">Data Status</span>
+            <svg class="chevron" :class="{ 'is-open': open }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9" />
             </svg>
-            Refresh
         </button>
+        <div v-if="open" class="dropdown">
+            <div class="status-list">
+                <div v-for="source in sources" :key="source.key" class="status-row">
+                    <span class="status-dot" :class="source.hasData ? 'dot-green' : 'dot-yellow'"></span>
+                    <span class="status-label">{{ source.label }}</span>
+                    <span class="status-count">{{ source.count }}</span>
+                </div>
+            </div>
+            <button class="btn-refresh" @click="onRefresh">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10" />
+                    <polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
+                Refresh
+            </button>
+        </div>
     </div>
 </template>
 
 <script>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 
 const KEYS = [
     'booking_headers_overview',
@@ -41,7 +52,22 @@ export default {
         wwEditorState: { type: Object, default: null },
     },
     emits: ['trigger-event'],
+    directives: {
+        'click-outside': {
+            mounted(el, binding) {
+                el._clickOutside = (e) => {
+                    if (!el.contains(e.target)) binding.value();
+                };
+                document.addEventListener('pointerdown', el._clickOutside);
+            },
+            unmounted(el) {
+                document.removeEventListener('pointerdown', el._clickOutside);
+            },
+        },
+    },
     setup(props, { emit }) {
+        const open = ref(false);
+
         const dataObj = computed(() => {
             const raw = props.content?.dataSource;
             if (!raw || typeof raw !== 'object') return {};
@@ -68,38 +94,86 @@ export default {
             emit('trigger-event', { name: 'refresh', event: { value: null } });
         }
 
-        return { sources, onRefresh };
+        return { open, sources, onRefresh };
     },
 };
 </script>
 
 <style lang="scss" scoped>
 .data-status {
+    position: relative;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 13px;
-    padding: 12px;
-    border-radius: 8px;
+}
+
+.status-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    width: 100%;
+
+    &:hover {
+        border-color: #d1d5db;
+    }
+}
+
+.dot-row {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.trigger-label {
+    flex: 1;
+    text-align: left;
+    color: #374151;
+    font-weight: 500;
+}
+
+.chevron {
+    width: 14px;
+    height: 14px;
+    color: #9ca3af;
+    transition: transform 0.15s;
+    &.is-open { transform: rotate(180deg); }
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 9999;
     background: #fff;
     border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    padding: 10px;
 }
 
 .status-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 12px;
+    gap: 4px;
+    margin-bottom: 10px;
 }
 
 .status-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 0;
+    padding: 3px 0;
 }
 
 .status-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     flex-shrink: 0;
 }
@@ -117,12 +191,13 @@ export default {
 .status-label {
     flex: 1;
     color: #374151;
+    font-size: 12px;
 }
 
 .status-count {
     color: #9ca3af;
-    font-size: 12px;
-    min-width: 30px;
+    font-size: 11px;
+    min-width: 28px;
     text-align: right;
 }
 
@@ -132,19 +207,19 @@ export default {
     justify-content: center;
     gap: 6px;
     width: 100%;
-    padding: 8px 12px;
+    padding: 7px 10px;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     background: #f9fafb;
     color: #374151;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
 
     svg {
-        width: 14px;
-        height: 14px;
+        width: 13px;
+        height: 13px;
     }
 
     &:hover {
