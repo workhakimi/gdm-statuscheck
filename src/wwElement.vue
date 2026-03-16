@@ -77,7 +77,11 @@ export default {
 
         const isLoading = computed(() => {
             const obj = dataObj.value;
-            return !obj || Object.keys(obj).length === 0;
+            if (!obj || Object.keys(obj).length === 0) return true;
+            return KEYS.every(key => {
+                const arr = obj[key];
+                return !Array.isArray(arr) || arr.length === 0;
+            });
         });
 
         const sources = computed(() =>
