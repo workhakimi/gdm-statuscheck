@@ -1,10 +1,11 @@
 <template>
     <div class="data-status" v-click-outside="() => open = false">
         <button class="status-trigger" @click="open = !open">
-            <div class="dot-row">
+            <span v-if="isLoading" class="loader"></span>
+            <div v-else class="dot-row">
                 <span v-for="source in sources" :key="source.key" class="status-dot" :class="source.hasData ? 'dot-green' : 'dot-gray'"></span>
             </div>
-            <span class="trigger-label">Data Status</span>
+            <span class="trigger-label">{{ isLoading ? 'Loading...' : 'Data Status' }}</span>
             <svg class="chevron" :class="{ 'is-open': open }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9" />
             </svg>
@@ -74,6 +75,11 @@ export default {
             return raw;
         });
 
+        const isLoading = computed(() => {
+            const obj = dataObj.value;
+            return !obj || Object.keys(obj).length === 0;
+        });
+
         const sources = computed(() =>
             KEYS.map(key => {
                 const arr = dataObj.value[key];
@@ -94,7 +100,7 @@ export default {
             emit('trigger-event', { name: 'refresh', event: { value: null } });
         }
 
-        return { open, sources, onRefresh };
+        return { open, isLoading, sources, onRefresh };
     },
 };
 </script>
@@ -121,6 +127,19 @@ export default {
     &:hover {
         border-color: #d1d5db;
     }
+}
+
+.loader {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #e5e7eb;
+    border-top-color: #6b7280;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 .dot-row {
