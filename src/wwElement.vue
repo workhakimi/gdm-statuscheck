@@ -19,6 +19,22 @@
 </template>
 
 <script>
+import { computed } from 'vue';
+
+const KEYS = [
+    'booking_headers_overview',
+    'booking_items_overview',
+    'change_log',
+    'inventory_data_bookings',
+    'mockup_requests_overview',
+    'orderplan_attbookings',
+    'orderplan_deliveries',
+    'orderplan_headers',
+    'orderplan_lines',
+    'production_jobs',
+    'teammates',
+];
+
 export default {
     props: {
         content: { type: Object, required: true },
@@ -26,37 +42,21 @@ export default {
     },
     emits: ['trigger-event'],
     setup(props, { emit }) {
-        const { computed } = wwLib.getFrontend ? require('vue') : window.Vue || require('vue');
-
-        function resolve(prop) {
-            const raw = props.content?.[prop];
-            if (!raw) return [];
-            const data = wwLib.wwUtils.getDataFromCollection(raw);
-            return Array.isArray(data) ? data : [];
-        }
-
-        const sourceConfig = [
-            { key: 'bookingHeadersOverview', label: 'booking_headers_overview' },
-            { key: 'bookingItemsOverview', label: 'booking_items_overview' },
-            { key: 'changeLog', label: 'change_log' },
-            { key: 'inventoryDataBookings', label: 'inventory_data_bookings' },
-            { key: 'mockupRequestsOverview', label: 'mockup_requests_overview' },
-            { key: 'orderplanAttbookings', label: 'orderplan_attbookings' },
-            { key: 'orderplanDeliveries', label: 'orderplan_deliveries' },
-            { key: 'orderplanHeaders', label: 'orderplan_headers' },
-            { key: 'orderplanLines', label: 'orderplan_lines' },
-            { key: 'productionJobs', label: 'production_jobs' },
-            { key: 'teammates', label: 'teammates' },
-        ];
+        const dataObj = computed(() => {
+            const raw = props.content?.dataSource;
+            if (!raw || typeof raw !== 'object') return {};
+            return raw;
+        });
 
         const sources = computed(() =>
-            sourceConfig.map(s => {
-                const data = resolve(s.key);
+            KEYS.map(key => {
+                const arr = dataObj.value[key];
+                const count = Array.isArray(arr) ? arr.length : 0;
                 return {
-                    key: s.key,
-                    label: s.label,
-                    count: data.length,
-                    hasData: data.length > 0,
+                    key,
+                    label: key,
+                    count,
+                    hasData: count > 0,
                 };
             })
         );
