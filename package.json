@@ -1,0 +1,13 @@
+{
+  "name": "gdm-statuscheck",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "weweb build",
+    "serve": "weweb serve"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@weweb/cli": "latest"
+  },
+  "license": "MIT"
+}
