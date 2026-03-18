@@ -43,6 +43,7 @@ const KEYS = [
     'orderplan_deliveries',
     'orderplan_headers',
     'orderplan_lines',
+    'production_capacity',
     'production_jobs',
     'teammates',
 ];
